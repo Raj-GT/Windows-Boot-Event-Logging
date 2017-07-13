@@ -18,7 +18,63 @@
     https://www.experts-exchange.com/articles/25559/Windows-boot-event-logging-and-monitoring-with-PowerShell.html
 
 .NOTES
-    Version:     1.1
-    Author:      Nimal Raj
-    Revisions:   12/07/2017  Initial draft of v1.1
+    Version:    1.1
+    Author:     Nimal Raj
+    Revisions:  13/07/2017      Initial draft of v1.1
 #>
+
+#Requires -Version 3.0
+
+#--------------------------------------------------------[Variables]--------------------------------------------------------
+$logfile = "C:\Logs\bootlog.csv"
+
+#--------------------------------------------------------[Functions]--------------------------------------------------------
+
+#--------------------------------------------------------[Execution]--------------------------------------------------------
+# If logfile doesn't exist, create it and add the CSV headers
+If (!(Test-Path $logfile))
+	{
+	    New-Item -Path $logfile -ItemType File -Force
+	    Add-Content -Path $logfile "Time,UserName,EventType,Process,ReasonCode,Comment,Message"
+    }
+
+# Grab the last Event 6009 entry (InstanceId 2147489657)
+$cleanboot = Get-EventLog -LogName System -Source EventLog -InstanceId 2147489657 -Newest 1
+
+# Look for Event 6008 (InstanceId 2147489656) immediately above/below
+$crashboot = Get-EventLog -LogName System -Source EventLog -InstanceId 2147489656 -After $cleanboot.TimeGenerated.AddSeconds(-3) -Before $cleanboot.TimeGenerated.AddSeconds(3) -ErrorAction SilentlyContinue
+
+# If $crashboot is empty then assume it is a cleanboot
+If (!($crashboot))
+	{
+    $Time = $cleanboot.TimeGenerated.ToString()
+    $UserName = $cleanboot.UserName
+    $EventType = "Cleanboot"
+    $Process = $cleanboot.Source
+    $ReasonCode = ""
+    $Comment = ""
+    $Message = $cleanboot.Message
+    
+    # Perform any other actions you want for a cleanboot
+
+    }
+    else
+	{
+    $Time = $crashboot.TimeGenerated.ToString()
+    $UserName = $crashboot.UserName
+    $EventType = "Crashboot"
+    $Process = $crashboot.Source
+    $ReasonCode = ""
+    $Comment = ""
+    $Message = $crashboot.Message
+    
+    # Perform any other actions you want for a crashboot
+    
+    }
+
+#Add event contents to logfile
+Add-content -Path $logfile "$Time,$UserName,$EventType,$Process,$ReasonCode,$Comment,$Message"
+
+# Add any actions you want performed at every startup below this line
+# E.g. You can update the monitoring system, send an e-mail or do something else
+# You can also re-use the startup event variables in your code
