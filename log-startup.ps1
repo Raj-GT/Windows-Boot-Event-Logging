@@ -49,7 +49,7 @@ If (!($crashboot))
 	{
     $Time = $cleanboot.TimeGenerated.ToString()
     $UserName = $cleanboot.UserName
-    $EventType = "Cleanboot"
+    $EventType = "cleanboot"
     $Process = $cleanboot.Source
     $ReasonCode = ""
     $Comment = ""
@@ -62,7 +62,7 @@ If (!($crashboot))
 	{
     $Time = $crashboot.TimeGenerated.ToString()
     $UserName = $crashboot.UserName
-    $EventType = "Crashboot"
+    $EventType = "crashboot"
     $Process = $crashboot.Source
     $ReasonCode = ""
     $Comment = ""
